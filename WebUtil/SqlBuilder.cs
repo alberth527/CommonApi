@@ -118,7 +118,7 @@ namespace Comm.WebUtil
                 throw new SystemException("Primary key is empty.");
             }
 
-            sqlQuery.Builder.Append($"UPDATE {TableName} SET  {string.Join(", ", sets.ToArray())} WHERE {string.Join(" AND ", wheres.ToArray())} ");
+            sqlQuery.Builder.Append($"UPDATE {TableName} SET  {string.join(", ", sets.ToArray())} WHERE {string.Join(" AND ", wheres.ToArray())} ");
             sqlQuery.Param = item;
             _logger.Info(sqlQuery.Builder);
             return sqlQuery;
@@ -144,6 +144,36 @@ namespace Comm.WebUtil
             }
             _logger.Info(sqlQuery.Builder);
             sqlQuery.Param = item;
+            return sqlQuery;
+        }
+
+        /// <summary>
+        /// Build Select SQL by Date Range
+        /// </summary>
+        /// <param name="TableName">Table name</param>
+        /// <param name="startDate">Start date</param>
+        /// <param name="endDate">End date</param>
+        /// <returns></returns>
+        public virtual SqlQuery BuildSelectByDateRange(string TableName, DateTime startDate, DateTime endDate)
+        {
+            SqlQuery sqlQuery = new SqlQuery();
+            sqlQuery.Builder.Append($"SELECT * FROM {TableName} WHERE Date >= @StartDate AND Date <= @EndDate");
+            sqlQuery.Param = new { StartDate = startDate, EndDate = endDate };
+            return sqlQuery;
+        }
+
+        /// <summary>
+        /// Build Select SQL by Temperature Range
+        /// </summary>
+        /// <param name="TableName">Table name</param>
+        /// <param name="minTemp">Minimum temperature</param>
+        /// <param name="maxTemp">Maximum temperature</param>
+        /// <returns></returns>
+        public virtual SqlQuery BuildSelectByTemperatureRange(string TableName, int minTemp, int maxTemp)
+        {
+            SqlQuery sqlQuery = new SqlQuery();
+            sqlQuery.Builder.Append($"SELECT * FROM {TableName} WHERE TemperatureC >= @MinTemp AND TemperatureC <= @MaxTemp");
+            sqlQuery.Param = new { MinTemp = minTemp, MaxTemp = maxTemp };
             return sqlQuery;
         }
     }
