@@ -100,6 +100,17 @@ namespace Comm.Model
             return Connection.Query<TEntity>(sqlQuery.Sql).ToList();
         }
 
+        public IEnumerable<TEntity> GetItemsByDateRange(DateTime startDate, DateTime endDate)
+        {
+            var sqlQuery = SqlBuilder.BuildSelectByDateRange(TableName, startDate, endDate);
+            return Connection.Query<TEntity>(sqlQuery.Sql, sqlQuery.Param);
+        }
+
+        public IEnumerable<TEntity> GetItemsByTemperatureRange(int minTemp, int maxTemp)
+        {
+            var sqlQuery = SqlBuilder.BuildSelectByTemperatureRange(TableName, minTemp, maxTemp);
+            return Connection.Query<TEntity>(sqlQuery.Sql, sqlQuery.Param);
+        }
 
         public int AddItem(string sql, dynamic param = null)
         {

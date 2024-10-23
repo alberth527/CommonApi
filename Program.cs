@@ -13,9 +13,9 @@ namespace CommonApi
         public static void Main(string[] args)
         {
 
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);//µù¥UBIG5
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);//ï¿½ï¿½ï¿½UBIG5
 
-            Dapper.SqlMapper.AddTypeMap(typeof(string), System.Data.DbType.AnsiString); //¹ïdapperÂà«¬°µ³]©w¡A­YµL³]©w·|¨C­Ó«¬ºA°µ´ú¸Õ¡A³y¦¨®É¶¡©µ¿ð
+            Dapper.SqlMapper.AddTypeMap(typeof(string), System.Data.DbType.AnsiString); //ï¿½ï¿½dapperï¿½à«¬ï¿½ï¿½ï¿½]ï¿½wï¿½Aï¿½Yï¿½Lï¿½]ï¿½wï¿½|ï¿½Cï¿½Ó«ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Õ¡Aï¿½yï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½ï¿½ï¿½
 
             var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
             NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
@@ -33,13 +33,35 @@ namespace CommonApi
             builder.Services.AddSingleton<JwtHelper>();
             builder.Services.AddHttpContextAccessor();
 
-
             // Add services to the container.
-
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Add JWT authentication
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<Jwtsettings>();
+            var key = Encoding.ASCII.GetBytes(jwtSettings.SignKey);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
 
             var app = builder.Build();
 
@@ -52,7 +74,6 @@ namespace CommonApi
 
             app.UseCors("CorsPolicy");
 
-
             app.UseAuthentication();
             app.UseAuthorization();
             // needed for  ${aspnet-request-posted-body} with an API Controller. Must be before app.UseEndpoints
@@ -62,7 +83,6 @@ namespace CommonApi
                 return next();
             });
             app.UseMiddleware<ErrorHandlerMiddleware>();
-
 
             app.MapControllers();
 

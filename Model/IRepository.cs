@@ -15,5 +15,7 @@ namespace Comm.Model
         int Update(string sql, dynamic param = null);
         int Delete(string sql, dynamic param = null);
 
+        IEnumerable GetItemsByDateRange(DateTime startDate, DateTime endDate);
+        IEnumerable GetItemsByTemperatureRange(int minTemp, int maxTemp);
     }
 }

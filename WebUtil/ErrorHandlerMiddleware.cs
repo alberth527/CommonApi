@@ -59,6 +59,9 @@ namespace Comm.WebUtil
 
             }
 
+            // Log user activities
+            LogUserActivity(context, request, response);
+
             //Copy the contents of the new memory stream (which contains the response) to the original stream, which is then returned to the client.
             await responseBody.CopyToAsync(originalBodyStream);
 
@@ -102,6 +105,12 @@ namespace Comm.WebUtil
             //Return the string for the response, including the status code (e.g. 200, 404, 401, etc.)
             return $"{response.StatusCode}: {text}";
         }
+
+        private void LogUserActivity(HttpContext context, string request, string response)
+        {
+            var userId = context.User.Identity.IsAuthenticated ? context.User.Identity.Name : "Anonymous";
+            var logMessage = $"User: {userId}, IP: {_IP}, Hostname: {_hostname}, Request: {request}, Response: {response}";
+            _logger.Info(logMessage);
+        }
     }
 }
-
